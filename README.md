@@ -1,4 +1,4 @@
-# Spring Boot SSE 구현하기
+# Spring으로 SSE 구현하기
 
 ## SSE란?
 Server Sent Event의 줄임말로 문자 그대로 해석하자면 서버에서 보내준 이벤트라는 의미이다.   
@@ -8,18 +8,34 @@ Server Sent Event의 줄임말로 문자 그대로 해석하자면 서버에서 
 ## SSE의 필요성
 Client(Browser)에서 주기적으로 데이터를 가져와야 한다면 여러가지 방법을 선택할 수 있다.
 
-1. API Polling, Long Polling
+1. Polling(Short, Long)
 2. HTTP Streaming
 3. WebSocket
 4. Server Sent Event
 
-위에 나열한 4가지의 기술로 이를 해결할 수 있다.
+위에 나열한 4가지의 기술로 이를 해결할 수 있다. 다만 각 기술마다의 장단점은 있으니 상황에 맞는 적절한 방법을 택해야 한다.
+
+## Feature
+- WebSocket과 달리 별도의 Protocol을 사용하지 않고 HTTP Protocol을 이용한다.
+- HTTP/1.1 은 브라우저에서 도메인당 EventStream 최대 6개이다. HTTP/2 는 최대 100개까지 가능하다.
+- 접속에 문제가 생겼을 경우 자동으로 재접속 요청을 보내어 다시 데이터를 받을 수 있게 한다.
+
+## Websocket과 비교
+![websocket_vs_sse](/readme_image/websocket_vs_sse.jpeg)
+Server와 Client간의 Real Time Notification 구현을 위해서 Websocket과 SSE를 많이 채택한다.   
+
+- Websocket Protocol을 이용하여 데이터를 주고 받을 수 있는 통로를 연결하여 매번 요청과 응답을 반복하지 않고 통신을 한다.
+- SSE는 Server에서 Client로 보내주는 단방향 통신이지만 Websocket은 Server와 Client간 양방향 통신이 가능하다.
 
 ## Servlet Stack
-Servlet Stack 은 SSE를 위한 클래스인 SseEmitter를 Spring Framework 4.2부터 지원하기 시작하였다. 때문에 이를 이용하면 손쉽게 SSE를 구현할 수 있다.
+Servlet Stack 은 SSE를 위한 클래스인 SseEmitter를 Spring Framework 4.2부터 지원하기 시작하였다. 때문에 이를 이용하면 손쉽게 SSE를 구현할 수 있다.   
+
+[예제코드](/web/src/main/kotlin/io/slogan/web/sse/controller/EventController.kt)
 
 ## Reactive Stack
-Reactive Stack 은 reactore에서 제공해 주는 클래스인 Flux를 이용하면 손쉽게 SSE를 구현할 수 있다.
+Reactive Stack 은 reactor의 Flux 객체를 이용하여 구현할 수 있다.
+
+[예제코드](/webflux/src/main/kotlin/io/slogan/sse/webflux/controller/ConnectionController.kt)
 
 ---
 ### Reference.
