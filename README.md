@@ -1,4 +1,4 @@
-# Spring으로 SSE 구현하기
+# Spring에서 SSE 구현하기
 
 ## SSE란?
 ![WebSocket_Data_Flow](/readme_image/sse-diagram.jpeg)   
@@ -20,6 +20,7 @@ Client(Browser)에서 주기적으로 데이터를 가져와야 한다면 여러
 - WebSocket과 달리 별도의 Protocol을 사용하지 않고 HTTP Protocol을 이용한다.
 - HTTP/1.1 은 브라우저에서 도메인당 EventStream 최대 6개이다. HTTP/2 는 최대 100개까지 가능하다.
 - 접속에 문제가 생겼을 경우 자동으로 재접속 요청을 보내어 다시 데이터를 받을 수 있게 한다.
+- 다만, Server에서 Client 쪽으로의 데이터 통신이기 때문에 Server에서 Client의 이벤트를 파악할 수 없다.
 
 ## Websocket과 비교
 ![websocket_vs_sse](/readme_image/websocket_vs_sse.jpeg)   
@@ -28,18 +29,33 @@ Server와 Client간의 Real Time Notification 구현을 위해서 Websocket과 S
 ### Websocket Feature
 - Websocket Protocol을 이용하여 데이터를 주고 받을 수 있는 통로를 연결하여 매번 요청과 응답을 반복하지 않고 통신을 한다.
 - SSE는 Server에서 Client로 보내주는 단방향 통신이지만 Websocket은 Server와 Client간 양방향 통신이 가능하다.
+- Client와 Server간의 연결 상태를 서로 주고받기 때문에 Server에서 Client의 연결 여부를 명확하게 알 수 있다.
 
 다만 Server, Client간의 양방향 통신이 필요 없다면 SSE를 사용하는것 보다 오버헤드가 크기때문에 상황에 맞게 Websocket과 SSE를 선택하여 사용하여야 한다.
 
 ## Servlet Stack
 Web MVC(Servlet Stack)을 사용한다면 SSE를 위한 클래스인 SseEmitter를 Spring Framework 4.2부터 지원하기 시작하였다. 때문에 이를 이용하면 손쉽게 SSE를 구현할 수 있다.   
+```kotlin
+@GetMapping("/connect")
+    fun connect(@RequestParam id: String): SseEmitter {
+        val sseEmitter = SseEmitter(15 * 1000)
+        sseEmitter.send(SseEmitter.event().name("connection").data("connected"))
 
-[예제코드](/web/src/main/kotlin/io/slogan/web/sse/controller/EventController.kt)
+        EventConstant.session[id] = sseEmitter
+        return sseEmitter
+    }
+```
+[Link](/web/src/main/kotlin/io/slogan/web/sse/controller/EventController.kt)
 
 ## Reactive Stack
 WebFlux(Reactive Stack)를 사용한다면 reactor의 Flux 객체를 이용하여 구현할 수 있다.
-
-[예제코드](/webflux/src/main/kotlin/io/slogan/sse/webflux/controller/ConnectionController.kt)
+```kotlin
+@GetMapping(path = ["/connect"], produces = [MediaType.TEXT_EVENT_STREAM_VALUE])
+    fun connect(): Flux<String>? {
+        return Flux.interval(Duration.ofSeconds(2)).map { "Hello World!! " + LocalTime.now().toString() }
+    }
+```
+[Link](/webflux/src/main/kotlin/io/slogan/sse/webflux/controller/ConnectionController.kt)
 
 ---
 ### Reference.
