@@ -1,4 +1,4 @@
-package io.slogan.web.sse
+package io.slogan.webmvc.sse
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication

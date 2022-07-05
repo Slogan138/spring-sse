@@ -1,6 +1,6 @@
-package io.slogan.web.sse.scheduler
+package io.slogan.webmvc.sse.scheduler
 
-import io.slogan.web.sse.constant.EventConstant
+import io.slogan.webmvc.sse.constant.EventConstant
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled

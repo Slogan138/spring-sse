@@ -7,7 +7,7 @@ plugins {
 	kotlin("plugin.spring") version "1.6.21"
 }
 
-group = "io.slogan.web.sse"
+group = "io.slogan.webmvc.sse"
 version = "0.0.1-SNAPSHOT"
 java.sourceCompatibility = JavaVersion.VERSION_17
 

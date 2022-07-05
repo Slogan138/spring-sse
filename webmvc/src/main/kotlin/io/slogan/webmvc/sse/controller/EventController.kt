@@ -1,6 +1,6 @@
-package io.slogan.web.sse.controller
+package io.slogan.webmvc.sse.controller
 
-import io.slogan.web.sse.constant.EventConstant
+import io.slogan.webmvc.sse.constant.EventConstant
 import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
