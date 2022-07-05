@@ -37,25 +37,50 @@ Server와 Client간의 Real Time Notification 구현을 위해서 Websocket과 S
 Web MVC(Servlet Stack)을 사용한다면 SSE를 위한 클래스인 SseEmitter를 Spring Framework 4.2부터 지원하기 시작하였다. 때문에 이를 이용하면 손쉽게 SSE를 구현할 수 있다.   
 ```kotlin
 @GetMapping("/connect")
-    fun connect(@RequestParam id: String): SseEmitter {
-        val sseEmitter = SseEmitter(15 * 1000)
-        sseEmitter.send(SseEmitter.event().name("connection").data("connected"))
+fun connect(@RequestParam id: String): SseEmitter {
+    val sseEmitter = SseEmitter(15 * 1000)
+    sseEmitter.send(SseEmitter.event().name("connection").data("connected"))
 
-        EventConstant.session[id] = sseEmitter
-        return sseEmitter
-    }
+    EventConstant.session[id] = sseEmitter
+    return sseEmitter
+}
 ```
-[Link](/web/src/main/kotlin/io/slogan/web/sse/controller/EventController.kt)
+[Link](/web/src/main/kotlin/io/slogan/web/sse/controller/EventController.kt)   
+
+다만 SseEmitter를 return 하는 것 만으로 SSE를 완벽하게 구현한 것이 아니다!!   
+SseEmitter는 Data 송신을 위한 EventStream을 생성하는 것이다.   
+생성된 SseEmitter를 저장하여 Server에서 Data 송신 시에 저장된 SseEmitter를 꺼내 Data를 송신해야 한다.
 
 ## Reactive Stack
-WebFlux(Reactive Stack)를 사용한다면 reactor의 Flux 객체를 이용하여 구현할 수 있다.
+WebFlux(Reactive Stack)를 사용한다면 reactor의 Mono, Flux 객체를 이용하여 구현할 수 있다.
 ```kotlin
 @GetMapping(path = ["/connect"], produces = [MediaType.TEXT_EVENT_STREAM_VALUE])
-    fun connect(): Flux<String>? {
-        return Flux.interval(Duration.ofSeconds(2)).map { "Hello World!! " + LocalTime.now().toString() }
-    }
+fun connect(): Flux<String>? {
+    return Flux.interval(Duration.ofSeconds(2)).map { "Hello World!! " + LocalTime.now().toString() }
+}
 ```
-[Link](/webflux/src/main/kotlin/io/slogan/sse/webflux/controller/ConnectionController.kt)
+[Link](/webflux/src/main/kotlin/io/slogan/sse/webflux/controller/ConnectionController.kt)   
+
+Servlet Stack에서의 SSE 구현보다 비교적 쉽게 구현할 수 있다.   
+기본적으로 Asynchronous 방식의 통신을 사용하기 때문에 Mono, Flux 객체를 이용하여 적절한 상황에 데이터를 송신할 수 있다.   
+다만 Server에서 Connetion 연결 요청의 MediaType이 text/event-stream으로 설정되어 있어야 한다.
+
+## Client에서의 연결
+```jsx
+// EventSource를 이용하여 eventstream 생성
+const eventStream = new EventSource('http://localhost:8080')
+
+eventStream.onmessage = (event) => {
+    // Do something what you want
+}
+
+eventStream.addEventListener('', (event) => {
+    // Do something what you want
+})
+```
+Client(Browser)에서의 Event Stream 연결은 JavaScript에서 제공해주는 EventSource를 이용하면 간단히 구현할 수 있다.   
+message 수신 이후 적절한 처리를 위해서는 onmessage에 데이터 활용 로직을 추가하여 처리할 수 있다.   
+또한 EventSource 객체에 직접 EventListener를 추가하여 Event 발생에 대한 처리가 가능하다.
 
 ---
 ### Reference.
